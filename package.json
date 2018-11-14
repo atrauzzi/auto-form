@@ -1,0 +1,32 @@
+{
+  "name": "auto-wrapper",
+  "version": "0.0.0-development",
+  "main": "./lib/index.js",
+  "types": "./lib/index.d.ts",
+  "repository": "https://github.com/atrauzzi/auto-wrapper",
+  "author": "Alexander Trauzzi <atrauzzi@gmai.com>",
+  "license": "Apache-2.0",
+  "private": false,
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "semantic-release": "semantic-release",
+    "build": "tsc",
+    "travis-deploy-once": "travis-deploy-once"
+  },
+  "dependencies": {
+    "@types/lodash": "^4.14.118",
+    "@types/react": "^16.7.6",
+    "@types/yup": "^0.26.1",
+    "auto-wrapper": "^1.0.0",
+    "lodash": "^4.17.11",
+    "protoculture": "^2.0.92",
+    "react": "^16.6.3",
+    "yup": "^0.26.6"
+  },
+  "devDependencies": {
+    "semantic-release": "^15.12.0",
+    "travis-deploy-once": "^5.0.9",
+    "ts-node": "^3.0.2",
+    "typescript": "^3.1.6"
+  }
+}

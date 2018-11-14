@@ -1,0 +1,397 @@
+import _ from "lodash";
+import React from "react";
+import Yup from "yup";
+import { createDeferred } from "protoculture";
+import { UsesFormContext, ValidationErrors, FormProvider, FormContextUtilities } from "./FormContext";
+import { DataOrSetType, DataItemType, DataSetType } from "./DataType";
+import { AutoWrapper } from "auto-wrapper";
+
+
+interface ComponentProps<
+    OriginalData,
+    DataItem = DataItemType<OriginalData>
+> {
+
+    index?: number;
+    validationErrors?: ValidationErrors<OriginalData>;
+
+    form?: Form<OriginalData>;
+
+    autoSave?: boolean;
+
+    identityProperties?: (keyof DataItem)[];
+    immutable?: boolean | ((data: DataItem) => boolean);
+
+    useFormTag?: boolean;
+    name?: string;
+    method?: string;
+    action?: string;
+
+    onSubmit?(data: OriginalData): any;
+    onChange?(newData: DataItem, oldData: DataItem): any;
+    onInvalid?(errors: ValidationErrors<OriginalData>): any;
+}
+
+type Props<OriginalData> = ComponentProps<OriginalData> & UsesFormContext<OriginalData>;
+
+interface State<
+    PropsType extends Props<any>,
+    OriginalData = PropsType['data'],
+    CopyOfPropsData = DataSetType<OriginalData>,
+    ValidationErrorsType = ValidationErrors<OriginalData>
+> {
+
+    editedData: CopyOfPropsData;
+    validationErrors: ValidationErrorsType;
+}
+
+export class Form<OriginalData> extends React.PureComponent<Props<OriginalData>, State<Props<OriginalData>>> implements FormContextUtilities<OriginalData> {
+
+    public static defaultProps: ComponentProps<any> = {
+        useFormTag: false,
+        autoSave: false,
+        immutable: false,
+        identityProperties: ["id"],
+    };
+
+    private static defaultStructure() {
+
+        return [] as any[];
+    }
+
+    private static defaultData<OriginalData = any>(value?: DataOrSetType<OriginalData>) {
+
+        if (!value) {
+
+            return Form.defaultStructure();
+        }
+
+        if (!_.isArray(value)) {
+
+            return [ value ];
+        }
+
+        return value;
+    }
+
+    private static defaultSchema(schema: Yup.Schema<any>) {
+
+        if (!schema) {
+
+            return null;
+        }        
+        else if (schema.describe().type == "array") {
+
+            return schema as Yup.ArraySchema<any>;
+        }
+        else {
+
+            return new Yup.array().of(schema);
+        }
+    }
+
+    private static defaultValidationErrors<OriginalData = any>(validationErrors?: ValidationErrors<OriginalData>): ValidationErrors<OriginalData> {
+
+        return validationErrors || {};
+    }
+
+    public constructor(props: Props<OriginalData>) {
+
+        super(props);
+
+        this.state = {
+            editedData: Form.defaultData(_.clone(props.data)),
+            validationErrors: Form.defaultValidationErrors(props.validationErrors),
+        };
+    }
+
+    public render() {
+
+        return this.props.useFormTag
+            ? this.renderWithFormTag()
+            : this.renderWithoutFormTag()
+        ;
+    }
+
+    private renderWithFormTag() {
+
+        return <form
+            name={this.props.name}
+            method={this.props.method}
+            action={this.props.action}
+            // onSubmit={(e) => this.submit(e)}
+        >
+            { this.renderData() }
+        </form>;
+    }
+
+    private renderWithoutFormTag() {
+
+        return this.renderData();
+    }
+
+    private renderData(): React.ReactNode {
+
+        return (this.state.editedData).map((datum, index) => {
+
+            const children: React.ReactNode = this.props.children;
+
+            return (
+                <FormProvider
+                    key={this.calculateIdentity(index)}
+                    value={{ 
+                        form: this,
+                        immutable: this.checkImmutable(datum),
+                        index,
+                        data: datum,
+                        validationErrors: this.state.validationErrors,
+                    }}
+                >
+                <AutoWrapper>
+                    { children }
+                </AutoWrapper>
+                </FormProvider>
+            );
+        });
+    }
+
+    public async add(datum: DataItemType<OriginalData>) {
+
+    }
+
+    public async setFieldValue(index: number, name: keyof DataItemType<OriginalData>, value: DataItemType<OriginalData>[typeof name]) {
+
+        const fieldPath = `${index}.${name}`;
+
+        if (this.validate(index, name, value)) {
+
+            const newEditedData = [ ...this.state.editedData ];
+            _.set(newEditedData, fieldPath, value);
+
+            await this.setStateAsync({
+                editedData: newEditedData,
+            });
+
+            await this.clearValidationError(index, name);
+
+            // await this.props.autoSave
+            //     ? this.submit(null, index)
+            //     : this.changed(index);
+        }
+        else {
+
+        }
+
+        // if (
+        //     !value
+        //     && !_.isBoolean(value)
+        //     && !_.isArray(value)
+        // ) {
+
+        //     await this.clearFieldValue(fieldPath);
+
+        //     return;
+        // }
+    }
+
+    private async validate<DataItem = DataItemType<OriginalData>>(index: number, name: keyof DataItem, value: DataItem[typeof name]) {
+
+        if (!this.props.schema) {
+
+            return true;
+        }
+
+        const fieldSchema = Yup.reach(this.props.schema, `[].${name}`);
+
+        try {
+
+            await fieldSchema.validate(value as any);
+
+            return true;
+        }
+        catch (error) {
+
+            await this.setValidationError(index, name, error);
+        }
+
+        return false;
+    }
+
+    private async setValidationError<DataItem = DataItemType<OriginalData>>(index: number, name: keyof DataItem, error: ValidationErrors<OriginalData>) {
+
+        const fieldPath = `${index}.${name}`;
+
+        const validationErrors = _.clone(this.state.validationErrors);
+        _.set(validationErrors, fieldPath, error);
+
+        await this.setStateAsync({ validationErrors });
+
+        this.props.onInvalid && this.props.onInvalid(this.state.validationErrors);
+    }
+
+    private async clearValidationError<DataItem = DataItemType<OriginalData>>(index: number, name: keyof DataItem) {
+
+        const fieldPath = `${index}.${name}`;
+
+        const validationErrors = _.clone(this.state.validationErrors);
+        _.unset(validationErrors, fieldPath);
+
+        await this.setStateAsync({ validationErrors });
+    }
+
+    // private submit(e: any) {
+
+    //     console.log("Guess I got submitted.");
+    // }
+
+    // public async clearFieldValue(fieldPath: string) {
+
+    //     const index = parseInt(fieldPath.match(/^\[([0-9]+)\]/)[1], 10);
+
+    //     const newCollection = [
+    //         ...this.state.data,
+    //     ];
+
+    //     _.unset(newCollection, fieldPath);
+
+    //     await this.setStateAsync({
+    //         data: _.filter(newCollection),
+    //     });
+
+    //     await this.clearValidationError(fieldPath);
+
+    //     await this.props.autoSave
+    //         ? this.submit(null, index)
+    //         : this.changed(index);
+    // }
+
+    // public async clearValidationErrors() {
+
+    //     await this.setStateAsync({
+    //         validationErrors: Form.defaultValidationErrors(),
+    //     });
+    // }
+
+    // public getFieldValue(fieldPath: string) {
+
+    //     return _.get(this.state, fieldPath);
+    // }
+
+    // public async setFieldValue(fieldPath: string, value: any) {
+
+    //     const index = parseInt(fieldPath.match(/^\[([0-9]+)\]/)[1], 10);
+
+    //     const newCollection = [ ...this.state.data ];
+    //     _.set(newCollection, fieldPath, value);
+
+    //     const newGenerations = [ ...this.state.dataGeneration ];
+    //     ++newGenerations[index];
+
+    //     await this.setStateAsync({
+    //         data: newCollection,
+    //         dataGeneration: newGenerations,
+    //     });
+
+    //     await this.clearValidationError(fieldPath);
+
+    //     await this.props.autoSave
+    //         ? this.submit(null, index)
+    //         : this.changed(index);
+    // }
+
+    // private async checkForm() {
+
+    //     await this.state.schema.validate(this.state.data, {
+    //         abortEarly: this.props.autoSave,
+    //     });
+    // }
+
+    // private async submit(event?: React.SyntheticEvent<any>, index?: number) {
+
+    //     if (event) {
+
+    //         event.preventDefault();
+    //     }
+
+    //     try {
+
+    //         await this.checkForm();
+
+    //         if (!this.props.onSubmit) {
+
+    //             return;
+    //         }
+
+    //         if (_.isArray(this.state.data)) {
+
+    //             await this.props.onSubmit(this.state.data[0]);
+    //         }
+    //         else {
+
+    //             await this.props.onSubmit(this.state.data);
+    //         }
+    //     }
+    //     catch (validationErrors) {
+
+    //         await this.setStateAsync({
+    //             validationErrors: this.indexError(validationErrors),
+    //         });
+
+    //         this.props.onInvalid && this.props.onInvalid(this.state.validationErrors);
+    //     }
+    // }
+
+    // private async changed(index?: number) {
+
+    //     this.props.onChange && this.props.onChange(_.isNumber(index)
+    //         ? this.state.data[index]
+    //         : this.state.data[0]
+    //     );
+    // }
+
+    // private indexError(e: Yup.ValidationError) {
+
+    //     return _.reduce(
+    //         e.inner,
+    //         (previous, current) => {
+
+    //             const nextSet = _.clone(previous);
+    //             _.set(nextSet, current.path, current);
+
+    //             return nextSet;
+    //         },
+    //         Form.defaultStructure()
+    //     );
+    // }
+
+    private checkImmutable(datum: DataItemType<OriginalData>) {
+
+        if (_.isFunction(this.props.immutable)) {
+
+            return this.props.immutable(datum);
+        }
+
+        return this.props.immutable && _.chain(datum as any)
+            .pick(this.props.identityProperties)
+            .toArray()
+            .filter()
+            .value()
+            .length === this.props.identityProperties.length;
+    }
+
+    private calculateIdentity(index: number) {
+
+        return _.chain(this.state.editedData[index] as any)
+            .pick(this.props.identityProperties)
+            .values()
+            .value()
+            .join("-");
+    }
+
+    private async setStateAsync<Key extends keyof State<Props<OriginalData>>>(state: (Pick<State<Props<OriginalData>>, Key> | State<Props<OriginalData>> | null)) {
+
+        const deferred = createDeferred();
+        this.setState(state, () => deferred.resolve());
+        await deferred.promise;
+    }
+}
