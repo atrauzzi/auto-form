@@ -1,9 +1,9 @@
 {
-  "name": "auto-wrapper",
+  "name": "protoculture-react-form",
   "version": "0.0.0-development",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
-  "repository": "https://github.com/atrauzzi/auto-wrapper",
+  "repository": "https://github.com/atrauzzi/protoculture-react-form",
   "author": "Alexander Trauzzi <atrauzzi@gmai.com>",
   "license": "Apache-2.0",
   "private": false,
