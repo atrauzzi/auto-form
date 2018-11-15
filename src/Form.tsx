@@ -1,6 +1,6 @@
 import _ from "lodash";
 import React from "react";
-import Yup from "yup";
+import * as Yup from "yup";
 import { createDeferred } from "protoculture";
 import { UsesFormContext, ValidationErrors, FormProvider, FormContextUtilities } from "./FormContext";
 import { DataOrSetType, DataItemType, DataSetType } from "./DataType";
