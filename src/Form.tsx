@@ -393,7 +393,6 @@ export class Form<OriginalData> extends React.PureComponent<Props<OriginalData>,
         return _.chain(this.state.editedData[index] as any)
             .pick(this.props.identityProperties)
             .values()
-            .concat(this.state.dataGeneration[index])
             .value()
             .join("-");
     }
