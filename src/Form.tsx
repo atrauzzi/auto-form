@@ -42,6 +42,7 @@ interface State<
 > {
 
     editedData: CopyOfPropsData;
+    dataGeneration: {[key: number]: number};
     validationErrors: ValidationErrorsType;
 }
 
@@ -101,6 +102,7 @@ export class Form<OriginalData> extends React.PureComponent<Props<OriginalData>,
 
         this.state = {
             editedData: Form.defaultData(_.clone(props.data)),
+            dataGeneration: {},
             validationErrors: Form.defaultValidationErrors(props.validationErrors),
         };
     }
@@ -160,6 +162,13 @@ export class Form<OriginalData> extends React.PureComponent<Props<OriginalData>,
     }
 
     public async setFieldValue(index: number, name: keyof DataItemType<OriginalData>, value: DataItemType<OriginalData>[typeof name]) {
+
+        await this.setStateAsync({
+            dataGeneration: {
+                ...this.state.dataGeneration,
+                [index]: this.state.dataGeneration[index] + 1,
+            },
+        });
 
         const fieldPath = `${index}.${name}`;
 
@@ -384,6 +393,7 @@ export class Form<OriginalData> extends React.PureComponent<Props<OriginalData>,
         return _.chain(this.state.editedData[index] as any)
             .pick(this.props.identityProperties)
             .values()
+            .concat(this.state.dataGeneration[index])
             .value()
             .join("-");
     }
