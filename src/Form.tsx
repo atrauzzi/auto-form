@@ -204,6 +204,24 @@ export class Form<OriginalData> extends React.PureComponent<Props<OriginalData>,
         // }
     }
 
+    public async submit() {
+
+        try {
+
+            await this.checkForm();
+
+            this.props.onSubmit && this.props.onSubmit(this.getEditedData());
+        }
+        catch (validationErrors) {
+
+            await this.setStateAsync({
+                validationErrors: this.indexErrors(validationErrors),
+            });
+
+            this.props.onInvalid && this.props.onInvalid(this.state.validationErrors);
+        }
+    }
+
     private async validate<DataItem = DataItemType<OriginalData>>(index: number, name: keyof DataItem, value: DataItem[typeof name]) {
 
         if (!this.props.schema) {
@@ -248,11 +266,6 @@ export class Form<OriginalData> extends React.PureComponent<Props<OriginalData>,
 
         await this.setStateAsync({ validationErrors });
     }
-
-    // private submit(e: any) {
-
-    //     console.log("Guess I got submitted.");
-    // }
 
     // public async clearFieldValue(fieldPath: string) {
 
@@ -309,48 +322,6 @@ export class Form<OriginalData> extends React.PureComponent<Props<OriginalData>,
     //         : this.changed(index);
     // }
 
-    // private async checkForm() {
-
-    //     await this.state.schema.validate(this.state.data, {
-    //         abortEarly: this.props.autoSave,
-    //     });
-    // }
-
-    // private async submit(event?: React.SyntheticEvent<any>, index?: number) {
-
-    //     if (event) {
-
-    //         event.preventDefault();
-    //     }
-
-    //     try {
-
-    //         await this.checkForm();
-
-    //         if (!this.props.onSubmit) {
-
-    //             return;
-    //         }
-
-    //         if (_.isArray(this.state.data)) {
-
-    //             await this.props.onSubmit(this.state.data[0]);
-    //         }
-    //         else {
-
-    //             await this.props.onSubmit(this.state.data);
-    //         }
-    //     }
-    //     catch (validationErrors) {
-
-    //         await this.setStateAsync({
-    //             validationErrors: this.indexError(validationErrors),
-    //         });
-
-    //         this.props.onInvalid && this.props.onInvalid(this.state.validationErrors);
-    //     }
-    // }
-
     // private async changed(index?: number) {
 
     //     this.props.onChange && this.props.onChange(_.isNumber(index)
@@ -359,20 +330,34 @@ export class Form<OriginalData> extends React.PureComponent<Props<OriginalData>,
     //     );
     // }
 
-    // private indexError(e: Yup.ValidationError) {
+    private async checkForm() {
 
-    //     return _.reduce(
-    //         e.inner,
-    //         (previous, current) => {
+        await this.props.schema.validate(this.state.editedData, {
+            abortEarly: this.props.autoSave,
+        });
+    }
 
-    //             const nextSet = _.clone(previous);
-    //             _.set(nextSet, current.path, current);
+    private getEditedData() {
 
-    //             return nextSet;
-    //         },
-    //         Form.defaultStructure()
-    //     );
-    // }
+        return _.isArray(this.props.data)
+            ? this.state.editedData as unknown as OriginalData
+            : this.state.editedData[0] as OriginalData;
+    }
+
+    private indexErrors(e: Yup.ValidationError) {
+
+        return _.reduce(
+            e.inner,
+            (previous, current) => {
+
+                const nextSet = _.clone(previous);
+                _.set(nextSet, current.path, current);
+
+                return nextSet;
+            },
+            Form.defaultValidationErrors<OriginalData>()
+        );
+    }
 
     private checkImmutable(datum: DataItemType<OriginalData>) {
 
