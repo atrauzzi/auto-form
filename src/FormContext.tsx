@@ -30,15 +30,18 @@ export const FormConsumer = Consumer;
 
 export function withForm<OriginalData = any, Props extends FormContext<OriginalData> = FormContext<OriginalData>>(Component: React.ComponentType<Props>) {
 
-    return function ComponentWithFormContext(props: Props) {
+    return class ComponentWithFormContext extends React.PureComponent {
 
-        return <FormConsumer>
+        public render() {
+
+            return <FormConsumer>
             {
                 (context: FormContext<OriginalData>) => <Component
-                    {...props}
+                    {...this.props}
                     {...context}
                 />
             }
-        </FormConsumer>;
-    };
+            </FormConsumer>;
+        }
+    }
 }

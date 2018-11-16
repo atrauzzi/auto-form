@@ -139,7 +139,7 @@ export class Form<OriginalData> extends React.PureComponent<Props<OriginalData>,
             const children: React.ReactNode = this.props.children;
 
             return (
-                <div key={this.calculateIdentity(index)}>
+                <React.Fragment key={this.calculateIdentity(index)}>
                     <FormProvider
                         value={{ 
                             form: this,
@@ -153,7 +153,7 @@ export class Form<OriginalData> extends React.PureComponent<Props<OriginalData>,
                         { children }
                     </AutoWrapper>
                     </FormProvider>
-                </div>
+                </React.Fragment>
             );
         });
     }
@@ -394,6 +394,7 @@ export class Form<OriginalData> extends React.PureComponent<Props<OriginalData>,
         return _.chain(this.state.editedData[index] as any)
             .pick(this.props.identityProperties)
             .values()
+            .unshift(index)
             .value()
             .join("-");
     }
