@@ -139,20 +139,21 @@ export class Form<OriginalData> extends React.PureComponent<Props<OriginalData>,
             const children: React.ReactNode = this.props.children;
 
             return (
-                <FormProvider
-                    key={this.calculateIdentity(index)}
-                    value={{ 
-                        form: this,
-                        immutable: this.checkImmutable(datum),
-                        index,
-                        data: datum,
-                        validationErrors: this.state.validationErrors,
-                    }}
-                >
-                <AutoWrapper>
-                    { children }
-                </AutoWrapper>
-                </FormProvider>
+                <React.Fragment key={this.calculateIdentity(index)}>
+                    <FormProvider
+                        value={{ 
+                            form: this,
+                            immutable: this.checkImmutable(datum),
+                            index,
+                            data: datum,
+                            validationErrors: this.state.validationErrors,
+                        }}
+                    >
+                    <AutoWrapper>
+                        { children }
+                    </AutoWrapper>
+                    </FormProvider>
+                </React.Fragment>
             );
         });
     }
