@@ -7,6 +7,7 @@ export type ValidationErrors<OriginalData, DataItem = DataItemType<OriginalData>
 
 export interface FormContextUtilities<OriginalData, DataItem = DataItemType<OriginalData>> {
 
+    submit(): Promise<void>;
     add(datum: DataItem): Promise<void>;
     setFieldValue(index: number, name: keyof DataItem, value: DataItem[typeof name]): Promise<void>;
 }
