@@ -166,7 +166,7 @@ export class Form<OriginalData> extends React.PureComponent<Props<OriginalData>,
         await this.setStateAsync({
             dataGeneration: {
                 ...this.state.dataGeneration,
-                [index]: this.state.dataGeneration[index] + 1,
+                [index]: (this.state.dataGeneration[index] || 0) + 1,
             },
         });
 
