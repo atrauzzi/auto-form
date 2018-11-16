@@ -139,7 +139,7 @@ export class Form<OriginalData> extends React.PureComponent<Props<OriginalData>,
             const children: React.ReactNode = this.props.children;
 
             return (
-                <React.Fragment key={this.calculateIdentity(index)}>
+                <div key={this.calculateIdentity(index)}>
                     <FormProvider
                         value={{ 
                             form: this,
@@ -153,7 +153,7 @@ export class Form<OriginalData> extends React.PureComponent<Props<OriginalData>,
                         { children }
                     </AutoWrapper>
                     </FormProvider>
-                </React.Fragment>
+                </div>
             );
         });
     }
