@@ -201,7 +201,7 @@ export class Form<OriginalData> extends React.PureComponent<Props<OriginalData>,
             return true;
         }
 
-        const fieldSchema = Yup.reach(this.props.schema, `[].${name}`);
+        const fieldSchema = Yup.reach(this.props.schema, name as string);
 
         try {
 
