@@ -79,7 +79,7 @@ export class Form<OriginalData> extends React.PureComponent<Props<OriginalData>,
 
         if (!schema) {
 
-            return null;
+            return Yup.object();
         }        
         else if (schema.describe().type == "array") {
 
