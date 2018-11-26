@@ -332,6 +332,11 @@ export class Form<OriginalData> extends React.PureComponent<Props<OriginalData>,
 
     private async checkForm() {
 
+        if (!this.props.schema) {
+
+            return;
+        }
+
         await this.props.schema.validate(this.state.editedData, {
             abortEarly: this.props.autoSave,
         });
