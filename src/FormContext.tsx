@@ -29,9 +29,11 @@ const { Provider, Consumer } = React.createContext<FormContext<any>>(null);
 export const FormProvider = Provider;
 export const FormConsumer = Consumer;
 
+type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
+
 export function withForm<OriginalData = any, Props extends FormContext<OriginalData> = FormContext<OriginalData>>(Component: React.ComponentType<Props>) {
 
-    return class ComponentWithFormContext extends React.PureComponent<Props> {
+    return class ComponentWithFormContext extends React.PureComponent<Omit<Props, keyof FormContext<OriginalData>>> {
 
         public render() {
 
