@@ -269,6 +269,13 @@ export class Form<OriginalData> extends React.PureComponent<Props<OriginalData>,
         await this.setStateAsync({ validationErrors });
     }
 
+    public async clearValidationErrors() {
+
+        await this.setStateAsync({
+            validationErrors: Form.defaultValidationErrors(),
+        });
+    }
+
     // public async clearFieldValue(fieldPath: string) {
 
     //     const index = parseInt(fieldPath.match(/^\[([0-9]+)\]/)[1], 10);
@@ -288,13 +295,6 @@ export class Form<OriginalData> extends React.PureComponent<Props<OriginalData>,
     //     await this.props.autoSave
     //         ? this.submit(null, index)
     //         : this.changed(index);
-    // }
-
-    // public async clearValidationErrors() {
-
-    //     await this.setStateAsync({
-    //         validationErrors: Form.defaultValidationErrors(),
-    //     });
     // }
 
     // public getFieldValue(fieldPath: string) {
@@ -342,6 +342,8 @@ export class Form<OriginalData> extends React.PureComponent<Props<OriginalData>,
         await this.state.collectionSchema.validate(this.state.editedData, {
             abortEarly: this.props.autoSave,
         });
+
+        await this.clearValidationErrors();
     }
 
     private getEditedData() {
