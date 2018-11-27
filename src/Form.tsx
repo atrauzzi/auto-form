@@ -41,6 +41,7 @@ interface State<
     ValidationErrorsType = ValidationErrors<OriginalData>
 > {
 
+    collectionSchema: Yup.ArraySchema<DataItemType<OriginalData>>;
     editedData: CopyOfPropsData;
     dataGeneration: {[key: number]: number};
     validationErrors: ValidationErrorsType;
@@ -79,7 +80,7 @@ export class Form<OriginalData> extends React.PureComponent<Props<OriginalData>,
 
         if (!schema) {
 
-            return Yup.object();
+            return Yup.array();
         }        
         else if (schema.describe().type == "array") {
 
@@ -101,6 +102,7 @@ export class Form<OriginalData> extends React.PureComponent<Props<OriginalData>,
         super(props);
 
         this.state = {
+            collectionSchema: Form.defaultSchema(props.schema),
             editedData: Form.defaultData(_.clone(props.data)),
             dataGeneration: {},
             validationErrors: Form.defaultValidationErrors(props.validationErrors),
@@ -337,7 +339,7 @@ export class Form<OriginalData> extends React.PureComponent<Props<OriginalData>,
             return;
         }
 
-        await this.props.schema.validate(this.state.editedData, {
+        await this.state.collectionSchema.validate(this.state.editedData, {
             abortEarly: this.props.autoSave,
         });
     }

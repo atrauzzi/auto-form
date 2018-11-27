@@ -19,7 +19,7 @@ export interface FormContext<OriginalData> {
     index: number;
     data: OriginalData;
     validationErrors: ValidationErrors<OriginalData>;
-    schema?: Yup.ArraySchema<DataItemType<OriginalData>>;
+    schema?: Yup.Schema<DataItemType<OriginalData>>;
 }
 
 export type UsesFormContext<OriginalData> = FormContext<OriginalData>;
