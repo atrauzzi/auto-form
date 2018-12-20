@@ -29,14 +29,18 @@ const { Provider, Consumer } = React.createContext<FormContext<any>>(null);
 export const FormProvider = Provider;
 export const FormConsumer = Consumer;
 
+type Omit<T, K> = Pick<T, Exclude<keyof T, K>>;
+type Subtract<T, K> = Omit<T, keyof K>;
+
 export function withForm<
-    Props,
+    Props extends FormContext<OriginalData>,
+    PropsWithoutContext = Subtract<Props, FormContext<OriginalData>>,
     OriginalData = any
 > (
-    Component: React.ComponentType<Props & FormContext<OriginalData>>
-): React.ReactType<Props> {
+    Component: React.ComponentType<FormContext<OriginalData> & PropsWithoutContext>
+): React.ComponentType<PropsWithoutContext> {
 
-    return (props: Props) => <FormConsumer>
+    return (props: PropsWithoutContext) => <FormConsumer>
     {
         (context: FormContext<OriginalData>) => <Component
             {...props}
