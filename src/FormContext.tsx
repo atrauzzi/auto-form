@@ -1,5 +1,5 @@
-import React from "react";
 import * as Yup from "yup";
+import React from "react";
 import { DataItemType } from "./DataType";
 
 
@@ -29,22 +29,19 @@ const { Provider, Consumer } = React.createContext<FormContext<any>>(null);
 export const FormProvider = Provider;
 export const FormConsumer = Consumer;
 
-type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
+export function withForm<
+    Props,
+    OriginalData = any
+> (
+    Component: React.ComponentType<Props & FormContext<OriginalData>>
+): React.ReactType<Props> {
 
-export function withForm<OriginalData = any, Props extends FormContext<OriginalData> = FormContext<OriginalData>>(Component: React.ComponentType<Props>) {
-
-    return class ComponentWithFormContext extends React.PureComponent<Omit<Props, keyof FormContext<OriginalData>>> {
-
-        public render() {
-
-            return <FormConsumer>
-            {
-                (context: FormContext<OriginalData>) => <Component
-                    {...this.props}
-                    {...context}
-                />
-            }
-            </FormConsumer>;
-        }
+    return (props: Props) => <FormConsumer>
+    {
+        (context: FormContext<OriginalData>) => <Component
+            {...props}
+            {...context}
+        />
     }
+    </FormConsumer>
 }
