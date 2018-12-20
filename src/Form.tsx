@@ -47,7 +47,13 @@ interface State<
     validationErrors: ValidationErrorsType;
 }
 
-export class Form<OriginalData> extends React.PureComponent<Props<OriginalData>, State<Props<OriginalData>>> implements FormContextUtilities<OriginalData> {
+export class Form<
+    OriginalData,
+    StateType extends State<Props<OriginalData>> = State<Props<OriginalData>>
+> extends React.PureComponent<
+    Props<OriginalData>, 
+    StateType
+> implements FormContextUtilities<OriginalData> {
 
     public static defaultProps: ComponentProps<any> = {
         useFormTag: false,
@@ -97,17 +103,12 @@ export class Form<OriginalData> extends React.PureComponent<Props<OriginalData>,
         return validationErrors || {};
     }
 
-    public constructor(props: Props<OriginalData>) {
-
-        super(props);
-
-        this.state = {
-            collectionSchema: Form.defaultSchema(props.schema),
-            editedData: Form.defaultData(_.clone(props.data)),
-            dataGeneration: {},
-            validationErrors: Form.defaultValidationErrors(props.validationErrors),
-        };
-    }
+    public readonly state: StateType = {
+        collectionSchema: null as any,
+        editedData: null as any,
+        dataGeneration: {},
+        validationErrors: {},
+    } as StateType;
 
     public render() {
 
@@ -393,7 +394,7 @@ export class Form<OriginalData> extends React.PureComponent<Props<OriginalData>,
             .join("-");
     }
 
-    private async setStateAsync(state: any) {
+    private async setStateAsync<K extends keyof StateType>(state: (Pick<StateType, K> | StateType)) {
 
         const deferred = createDeferred();
         this.setState(state, () => deferred.resolve());
