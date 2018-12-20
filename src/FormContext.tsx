@@ -29,20 +29,21 @@ const { Provider, Consumer } = React.createContext<FormContext<any>>(null);
 export const FormProvider = Provider;
 export const FormConsumer = Consumer;
 
+// todo: I'd love to use these...
+type GetProps<C> = C extends React.ComponentType<infer P> ? P : never;
 type Omit<T, K> = Pick<T, Exclude<keyof T, K>>;
 type Subtract<T, K> = Omit<T, keyof K>;
 
 export function withForm<
-    Props extends FormContext<OriginalData>,
-    PropsWithoutContext = Subtract<Props, FormContext<OriginalData>>,
-    OriginalData = any
-> (
-    Component: React.ComponentType<FormContext<OriginalData> & PropsWithoutContext>
-): React.ComponentType<PropsWithoutContext> {
+    ReturnProps = GetProps<WrappedComponentType>,
+    WrappedComponentType = React.ComponentType<ReturnProps>
+>(
+    Component: React.ComponentType<ReturnProps & FormContext<any>>
+): React.ComponentType<ReturnProps> {
 
-    return (props: PropsWithoutContext) => <FormConsumer>
+    return (props: ReturnProps) => <FormConsumer>
     {
-        (context: FormContext<OriginalData>) => <Component
+        (context: FormContext<any>) => <Component
             {...props}
             {...context}
         />
