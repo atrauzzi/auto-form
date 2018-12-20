@@ -393,7 +393,7 @@ export class Form<OriginalData> extends React.PureComponent<Props<OriginalData>,
             .join("-");
     }
 
-    private async setStateAsync<Key extends keyof State<Props<OriginalData>>>(state: (Pick<State<Props<OriginalData>>, Key> | State<Props<OriginalData>> | null)) {
+    private async setStateAsync(state: any) {
 
         const deferred = createDeferred();
         this.setState(state, () => deferred.resolve());
