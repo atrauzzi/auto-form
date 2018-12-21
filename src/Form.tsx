@@ -105,7 +105,7 @@ export class Form<
 
     public readonly state: StateType = {
         collectionSchema: null as any,
-        editedData: null as any,
+        editedData: [],
         dataGeneration: {},
         validationErrors: {},
     } as StateType;
