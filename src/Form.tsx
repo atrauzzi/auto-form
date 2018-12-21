@@ -104,11 +104,21 @@ export class Form<
     }
 
     public readonly state: StateType = {
-        collectionSchema: null as any,
+        collectionSchema: Yup.array(),
         editedData: [],
         dataGeneration: {},
         validationErrors: {},
     } as StateType;
+
+    public componentDidMount() {
+
+        this.setState({
+            collectionSchema: Form.defaultSchema(this.props.schema),
+            editedData: Form.defaultData(_.clone(this.props.data)),
+            dataGeneration: {},
+            validationErrors: Form.defaultValidationErrors(this.props.validationErrors),
+        });
+    }
 
     public render() {
 
