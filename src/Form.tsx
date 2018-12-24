@@ -62,6 +62,16 @@ export class Form<
         identityProperties: ["id"],
     };
 
+    public static getDerivedStateFromProps(props: Props<any>, state: State<Props<any>>) {
+
+        return {
+            collectionSchema: Form.defaultSchema(props.schema),
+            editedData: Form.defaultData(_.clone(props.data)),
+            dataGeneration: {},
+            validationErrors: Form.defaultValidationErrors(props.validationErrors),
+        };
+    }
+
     private static defaultStructure() {
 
         return [] as any[];
@@ -109,16 +119,6 @@ export class Form<
         dataGeneration: {},
         validationErrors: {},
     } as StateType;
-
-    public componentDidMount() {
-
-        this.setState({
-            collectionSchema: Form.defaultSchema(this.props.schema),
-            editedData: Form.defaultData(_.clone(this.props.data)),
-            dataGeneration: {},
-            validationErrors: Form.defaultValidationErrors(this.props.validationErrors),
-        });
-    }
 
     public render() {
 
