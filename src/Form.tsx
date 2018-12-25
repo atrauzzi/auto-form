@@ -69,6 +69,7 @@ export class Form<
 
             return {
                 collectionSchema: Form.defaultSchema(props.schema),
+                sourceData: props.data,
                 editedData: Form.defaultData(_.clone(props.data)),
                 dataGeneration: {},
                 // todo: Should I validate here?
