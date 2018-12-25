@@ -62,13 +62,14 @@ export class Form<
         identityProperties: ["id"],
     };
 
-    public static getDerivedStateFromProps(props: Props<any>, state: State<Props<any>>) {
+    public static getDerivedStateFromProps(props: Props<any>, lastState: State<Props<any>>) {
 
         return {
             collectionSchema: Form.defaultSchema(props.schema),
             editedData: Form.defaultData(_.clone(props.data)),
             dataGeneration: {},
             validationErrors: Form.defaultValidationErrors(props.validationErrors),
+            ...lastState,
         };
     }
 
@@ -112,13 +113,6 @@ export class Form<
 
         return validationErrors || {};
     }
-
-    public readonly state: StateType = {
-        collectionSchema: Yup.array(),
-        editedData: [],
-        dataGeneration: {},
-        validationErrors: {},
-    } as StateType;
 
     public render() {
 
@@ -191,6 +185,7 @@ export class Form<
             const newEditedData = [ ...this.state.editedData ];
             _.set(newEditedData, fieldPath, value);
 
+            // Note: This could be bad for performance if the change of the entire `editedData` set is causing redraws.
             await this.setStateAsync({
                 editedData: newEditedData,
             });
