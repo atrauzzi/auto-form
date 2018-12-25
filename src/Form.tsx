@@ -66,10 +66,10 @@ export class Form<
 
         return {
             collectionSchema: Form.defaultSchema(props.schema),
-            editedData: Form.defaultData(_.clone(props.data)),
-            dataGeneration: {},
+            editedData: lastState.editedData || Form.defaultData(_.clone(props.data)),
+            dataGeneration: lastState.dataGeneration || {},
+            // todo: Should I validate here?
             validationErrors: Form.defaultValidationErrors(props.validationErrors),
-            ...lastState,
         };
     }
 
