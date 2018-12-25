@@ -42,6 +42,7 @@ interface State<
 > {
 
     collectionSchema: Yup.ArraySchema<DataItemType<OriginalData>>;
+    sourceData: PropsType;
     editedData: CopyOfPropsData;
     dataGeneration: {[key: number]: number};
     validationErrors: ValidationErrorsType;
@@ -62,19 +63,20 @@ export class Form<
         identityProperties: ["id"],
     };
 
-    public static getDerivedStateFromProps(props: Props<any>, lastState: State<Props<any>> | null) {
+    public static getDerivedStateFromProps(props: Props<any>, state: State<Props<any>>) {
 
-        return {
-            collectionSchema: Form.defaultSchema(props.schema),
-            editedData: lastState
-                ? lastState.editedData
-                : Form.defaultData(_.clone(props.data)),
-            dataGeneration: lastState
-                ? lastState.dataGeneration
-                : {},
-            // todo: Should I validate here?
-            validationErrors: Form.defaultValidationErrors(props.validationErrors),
-        };
+        if (props.data !== state.sourceData) {
+
+            return {
+                collectionSchema: Form.defaultSchema(props.schema),
+                editedData: Form.defaultData(_.clone(props.data)),
+                dataGeneration: {},
+                // todo: Should I validate here?
+                validationErrors: Form.defaultValidationErrors(props.validationErrors),
+            };
+        }
+
+        return null;
     }
 
     private static defaultStructure() {
@@ -144,6 +146,11 @@ export class Form<
     }
 
     private renderData(): React.ReactNode {
+
+        if (!this.state.editedData) {
+
+            return null;
+        }
 
         return (this.state.editedData).map((datum, index) => {
 
