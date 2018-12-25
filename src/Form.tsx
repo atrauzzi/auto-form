@@ -62,7 +62,7 @@ export class Form<
         identityProperties: ["id"],
     };
 
-    public static getDerivedStateFromProps(props: Props<any>, lastState: State<Props<any>>) {
+    public static getDerivedStateFromProps(props: Props<any>, lastState: Partial<State<Props<any>>> = {}) {
 
         return {
             collectionSchema: Form.defaultSchema(props.schema),
