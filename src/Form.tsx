@@ -65,7 +65,10 @@ export class Form<
 
     public static getDerivedStateFromProps(props: Props<any>, state: State<Props<any>>) {
 
-        if (props.data !== state.sourceData) {
+        if (
+            !state 
+            || (props.data !== state.sourceData)
+        ) {
 
             return {
                 collectionSchema: Form.defaultSchema(props.schema),
