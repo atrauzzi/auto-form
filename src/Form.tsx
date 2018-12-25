@@ -62,12 +62,16 @@ export class Form<
         identityProperties: ["id"],
     };
 
-    public static getDerivedStateFromProps(props: Props<any>, lastState: Partial<State<Props<any>>> = {}) {
+    public static getDerivedStateFromProps(props: Props<any>, lastState: State<Props<any>> | null) {
 
         return {
             collectionSchema: Form.defaultSchema(props.schema),
-            editedData: lastState.editedData || Form.defaultData(_.clone(props.data)),
-            dataGeneration: lastState.dataGeneration || {},
+            editedData: lastState
+                ? lastState.editedData
+                : Form.defaultData(_.clone(props.data)),
+            dataGeneration: lastState
+                ? lastState.dataGeneration
+                : {},
             // todo: Should I validate here?
             validationErrors: Form.defaultValidationErrors(props.validationErrors),
         };
