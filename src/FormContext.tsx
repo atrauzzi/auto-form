@@ -1,51 +1,52 @@
+import _ from "lodash";
 import * as Yup from "yup";
 import React from "react";
 import { DataItemType } from "./DataType";
+import { Omit } from "protoculture";
 
 
-export type ValidationErrors<OriginalData, DataItem = DataItemType<OriginalData>> = { [name in keyof DataItem]?: Yup.ValidationError };
+export type ValidationErrors<DataType, DataItem = DataItemType<DataType>> = { [name in keyof DataItem]?: Yup.ValidationError };
 
-export interface FormContextUtilities<OriginalData, DataItem = DataItemType<OriginalData>> {
+export interface FormContextUtilities<DataType, DataItem = DataItemType<DataType>> {
 
     submit(): Promise<void>;
     add(datum: DataItem): Promise<void>;
     setFieldValue(index: number, name: keyof DataItem, value: DataItem[typeof name]): Promise<void>;
 }
 
-export interface FormContext<OriginalData> {
+export interface FormContext<DataType> {
 
-    form: FormContextUtilities<OriginalData>;
+    form: FormContextUtilities<DataType>;
     immutable: boolean;
     index: number;
-    data: OriginalData;
-    validationErrors: ValidationErrors<OriginalData>;
-    schema?: Yup.Schema<DataItemType<OriginalData>>;
+    data: DataType;
+    validationErrors: ValidationErrors<DataType>;
+    schema?: Yup.Schema<DataItemType<DataType>>;
 }
 
-export type UsesFormContext<OriginalData> = FormContext<OriginalData>;
+export type UsesFormContext<DataType> = FormContext<DataType>;
 
 const { Provider, Consumer } = React.createContext<FormContext<any>>(null);
 
 export const FormProvider = Provider;
 export const FormConsumer = Consumer;
 
-// todo: I'd love to use these...
-type GetProps<C> = C extends React.ComponentType<infer P> ? P : never;
-type Omit<T, K> = Pick<T, Exclude<keyof T, K>>;
-type Subtract<T, K> = Omit<T, keyof K>;
+export type GetProps<C> = C extends React.ComponentType<infer P> ? P : never;
 
 export function withForm<
-    ReturnProps = GetProps<WrappedComponentType>,
-    WrappedComponentType = React.ComponentType<ReturnProps>
->(
-    Component: React.ComponentType<ReturnProps & FormContext<any>>
-): React.ComponentType<ReturnProps> {
+    DataType,
+    RequiredProps extends FormContext<DataType>,
+    FormComponentType extends React.ComponentType<RequiredProps>,
+    FormComponentProps extends RequiredProps = GetProps<FormComponentType>,
+    WrappedComponentProps = Omit<FormComponentProps, keyof RequiredProps>
+>
+(FormComponent: React.ComponentType<FormContext<DataType>>) {
 
-    return (props: ReturnProps) => <FormConsumer>
+    return (props: WrappedComponentProps) => <FormConsumer>
     {
-        (context: FormContext<any>) => <Component
-            {...props}
+        (context: FormContext<DataType>) => <FormComponent
             {...context}
+            {...props}
         />
     }
     </FormConsumer>
