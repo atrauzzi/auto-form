@@ -32,21 +32,23 @@ export const FormProvider = Provider;
 export const FormConsumer = Consumer;
 
 export type GetProps<C> = C extends React.ComponentType<infer P> ? P : never;
+export type GetDataType<C> = C extends FormContext<infer T> ? T : never;
 
-export function withForm<
+export function withForm
+<
     DataType,
-    RequiredProps extends FormContext<DataType>,
-    FormComponentType extends React.ComponentType<RequiredProps>,
-    FormComponentProps extends RequiredProps = GetProps<FormComponentType>,
-    WrappedComponentProps = Omit<FormComponentProps, keyof RequiredProps>
+    ContextType extends UsesFormContext<DataType>,
+    ComponentType extends React.ComponentType<ContextType>,
+    FormComponentProps extends GetProps<ComponentType>,
+    WrappedComponentProps extends Omit<FormComponentProps, keyof ContextType>
 >
-(FormComponent: React.ComponentType<FormContext<DataType>>) {
+(FormComponent: React.ComponentType<FormComponentProps>): React.ComponentType<WrappedComponentProps> {
 
     return (props: WrappedComponentProps) => <FormConsumer>
     {
-        (context: FormContext<DataType>) => <FormComponent
-            {...context}
-            {...props}
+        (context: UsesFormContext<DataType>) => <FormComponent
+            {...context as any}
+            {...props as any}
         />
     }
     </FormConsumer>
