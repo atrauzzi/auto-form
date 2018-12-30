@@ -42,14 +42,21 @@ export function withForm
     FormComponentProps extends GetProps<ComponentType>,
     WrappedComponentProps extends Omit<FormComponentProps, keyof ContextType>
 >
-(FormComponent: React.ComponentType<FormComponentProps>): React.ComponentType<WrappedComponentProps> {
+(FormComponent: React.ComponentType<FormComponentProps | WrappedComponentProps>): React.ComponentType<WrappedComponentProps> {
 
-    return (props: WrappedComponentProps) => <FormConsumer>
+    return (props) => <FormConsumer>
     {
-        (context: UsesFormContext<DataType>) => <FormComponent
-            {...context as any}
-            {...props as any}
-        />
+        (context: UsesFormContext<DataType>) => {
+        
+            const combinedProps = {
+                ...context,
+                ...props,
+            };
+
+            return <FormComponent
+                { ...combinedProps }
+            />
+        }
     }
     </FormConsumer>
 }
