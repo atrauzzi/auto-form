@@ -37,12 +37,11 @@ export type GetDataType<C> = C extends FormContext<infer T> ? T : never;
 export function withForm
 <
     DataType,
-    ContextType extends UsesFormContext<DataType>,
-    ComponentType extends React.ComponentType<ContextType>,
-    FormComponentProps extends GetProps<ComponentType>,
-    WrappedComponentProps extends Omit<FormComponentProps, keyof ContextType>
+    WidgetType extends React.ComponentType<UsesFormContext<DataType> & any>,
+    WidgetProps extends GetProps<WidgetType>
 >
-(FormComponent: React.ComponentType<FormComponentProps | WrappedComponentProps>): React.ComponentType<WrappedComponentProps> {
+(FormComponent: WidgetType)
+: React.ComponentType<Omit<WidgetProps, keyof UsesFormContext<DataType>>> {
 
     return (props) => <FormConsumer>
     {
@@ -51,7 +50,7 @@ export function withForm
             const combinedProps = {
                 ...context,
                 ...props,
-            };
+            } as WidgetProps;
 
             return <FormComponent
                 { ...combinedProps }
