@@ -201,11 +201,11 @@ implements FormContextUtilities<DataItem> {
 
             if (_.isUndefined(value)) {
 
-                _.set(editedData, fieldPath, value);
+                _.unset(editedData, fieldPath);
             }
             else {
 
-                _.unset(editedData, fieldPath);
+                _.set(editedData, fieldPath, value);
             }
 
             // note: This could be bad for performance if the change of the entire `editedData` set is causing redraws.
