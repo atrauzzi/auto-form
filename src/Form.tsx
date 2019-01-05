@@ -183,7 +183,7 @@ implements FormContextUtilities<DataItem> {
 
     }
 
-    public async setFieldValue(index: number, name: keyof DataItem, value: DataItem[typeof name]) {
+    public async setFieldValue(index: number, name: keyof DataItem, value?: DataItem[typeof name] | undefined) {
 
         await this.setStateAsync({
             dataGeneration: {
