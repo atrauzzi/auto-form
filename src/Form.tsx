@@ -198,7 +198,15 @@ implements FormContextUtilities<DataItem> {
 
             const originalData = this.state.editedData;
             const editedData = [ ...this.state.editedData ];
-            _.set(editedData, fieldPath, value);
+
+            if (_.isUndefined(value)) {
+
+                _.set(editedData, fieldPath, value);
+            }
+            else {
+
+                _.unset(editedData, fieldPath);
+            }
 
             // note: This could be bad for performance if the change of the entire `editedData` set is causing redraws.
             await this.setStateAsync({
@@ -329,28 +337,6 @@ implements FormContextUtilities<DataItem> {
     // public getFieldValue(fieldPath: string) {
 
     //     return _.get(this.state, fieldPath);
-    // }
-
-    // public async setFieldValue(fieldPath: string, value: any) {
-
-    //     const index = parseInt(fieldPath.match(/^\[([0-9]+)\]/)[1], 10);
-
-    //     const newCollection = [ ...this.state.data ];
-    //     _.set(newCollection, fieldPath, value);
-
-    //     const newGenerations = [ ...this.state.dataGeneration ];
-    //     ++newGenerations[index];
-
-    //     await this.setStateAsync({
-    //         data: newCollection,
-    //         dataGeneration: newGenerations,
-    //     });
-
-    //     await this.clearValidationError(fieldPath);
-
-    //     await this.props.autoSave
-    //         ? this.submit(null, index)
-    //         : this.changed(index);
     // }
 
     private async changed(editedItem: DataItemType<OriginalData>, originalItem: DataItemType<OriginalData>) {
