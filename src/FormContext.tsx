@@ -5,9 +5,14 @@ import { DataItemType } from "./DataType";
 import { Omit } from "protoculture";
 
 
-export type ValidationErrors<DataType, DataItem = DataItemType<DataType>> = { [name in keyof DataItem]?: Yup.ValidationError };
+export type ValidationErrors
+<
+    OriginalData, 
+    DataItem extends DataItemType<OriginalData> = DataItemType<OriginalData>,
+    DataItemKey extends keyof DataItem = Extract<keyof DataItem, string>,
+> = { [name in DataItemKey]?: Yup.ValidationError };
 
-export interface FormContextUtilities<DataType, DataItem = DataItemType<DataType>> {
+export interface FormContextUtilities<DataItem> {
 
     submit(): Promise<void>;
     add(datum: DataItem): Promise<void>;
@@ -16,12 +21,12 @@ export interface FormContextUtilities<DataType, DataItem = DataItemType<DataType
 
 export interface FormContext<DataType> {
 
-    form: FormContextUtilities<DataType>;
-    immutable: boolean;
-    index: number;
     data: DataType;
-    validationErrors: ValidationErrors<DataType>;
+    form: FormContextUtilities<DataType>;
+    index: number;
+    immutable: boolean;
     schema?: Yup.Schema<DataItemType<DataType>>;
+    validationErrors: ValidationErrors<DataType>;
 }
 
 export type UsesFormContext<DataType> = FormContext<DataType>;

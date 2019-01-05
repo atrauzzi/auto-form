@@ -1,7 +1,7 @@
 
 
 export type DataItemType<DataType> = DataType extends any[]
-    ? DataType[0] | Partial<DataType[0]>
+    ? DataType[number] | Partial<DataType[number]>
     : DataType | Partial<DataType>;
 
 export type DataOrSetType<DataType> = DataType | DataType[];

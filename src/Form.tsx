@@ -12,12 +12,11 @@ interface ComponentProps<
     DataItem = DataItemType<OriginalData>
 > {
 
+    form?: Form<OriginalData>;
     index?: number;
     validationErrors?: ValidationErrors<OriginalData>;
 
-    form?: Form<OriginalData>;
-
-    autoSave?: boolean;
+    // autoSave?: boolean;
 
     identityProperties?: (keyof DataItem)[];
     immutable?: boolean | ((data: DataItem) => boolean);
@@ -28,37 +27,38 @@ interface ComponentProps<
     action?: string;
 
     onSubmit?(data: OriginalData): any;
-    onChange?(newData: DataItem, oldData: DataItem): any;
+    onChange?(editedData: DataItem, dataBeforeEdit?: DataItem): any;
     onInvalid?(errors: ValidationErrors<OriginalData>): any;
 }
 
 type Props<OriginalData> = ComponentProps<OriginalData> & UsesFormContext<OriginalData>;
 
+type GetOriginalData<T> = T extends Props<infer P> ? P : never;
+
 interface State<
     PropsType extends Props<any>,
-    OriginalData = PropsType['data'],
-    CopyOfPropsData = DataSetType<OriginalData>,
-    ValidationErrorsType = ValidationErrors<OriginalData>
+    OriginalData = GetOriginalData<PropsType>,
+    DataItem extends DataItemType<OriginalData> = DataItemType<OriginalData>
 > {
-
     collectionSchema: Yup.ArraySchema<DataItemType<OriginalData>>;
-    sourceData: PropsType;
-    editedData: CopyOfPropsData;
+    sourceData: OriginalData;
+    editedData: DataItem[];
     dataGeneration: {[key: number]: number};
-    validationErrors: ValidationErrorsType;
+    validationErrors: ValidationErrors<OriginalData>;
 }
 
 export class Form<
     OriginalData,
-    StateType extends State<Props<OriginalData>> = State<Props<OriginalData>>
-> extends React.PureComponent<
-    Props<OriginalData>, 
-    StateType
-> implements FormContextUtilities<OriginalData> {
+    PropsType extends Props<OriginalData> = Props<OriginalData>,
+    StateType extends State<PropsType> = State<PropsType>,
+    DataItem = DataItemType<OriginalData>
+>
+extends React.PureComponent<PropsType, StateType>
+implements FormContextUtilities<DataItem> {
 
     public static defaultProps: ComponentProps<any> = {
         useFormTag: false,
-        autoSave: false,
+        // autoSave: false,
         immutable: false,
         identityProperties: ["id"],
     };
@@ -71,9 +71,9 @@ export class Form<
         ) {
 
             return {
-                collectionSchema: Form.defaultSchema(props.schema),
+                collectionSchema: Form.castSchema(props.schema),
                 sourceData: props.data,
-                editedData: Form.defaultData(_.clone(props.data)),
+                editedData: Form.castData(_.clone(props.data)),
                 dataGeneration: {},
                 // todo: Should I validate here?
                 validationErrors: Form.defaultValidationErrors(props.validationErrors),
@@ -88,11 +88,11 @@ export class Form<
         return [] as any[];
     }
 
-    private static defaultData<OriginalData = any>(value?: DataOrSetType<OriginalData>) {
+    private static castData<OriginalData>(value?: DataOrSetType<OriginalData>) {
 
         if (!value) {
 
-            return Form.defaultStructure();
+            return Form.defaultStructure() as DataSetType<OriginalData>;
         }
 
         if (!_.isArray(value)) {
@@ -103,7 +103,7 @@ export class Form<
         return value;
     }
 
-    private static defaultSchema(schema: Yup.Schema<any>) {
+    private static castSchema(schema: Yup.Schema<any>) {
 
         if (!schema) {
 
@@ -138,7 +138,6 @@ export class Form<
             name={this.props.name}
             method={this.props.method}
             action={this.props.action}
-            // onSubmit={(e) => this.submit(e)}
         >
             { this.renderData() }
         </form>;
@@ -180,11 +179,11 @@ export class Form<
         });
     }
 
-    public async add(datum: DataItemType<OriginalData>) {
+    public async add(datum: DataItem) {
 
     }
 
-    public async setFieldValue(index: number, name: keyof DataItemType<OriginalData>, value: DataItemType<OriginalData>[typeof name]) {
+    public async setFieldValue(index: number, name: keyof DataItem, value: DataItem[typeof name]) {
 
         await this.setStateAsync({
             dataGeneration: {
@@ -193,19 +192,22 @@ export class Form<
             },
         });
 
-        const fieldPath = `${index}.${name}`;
+        const fieldPath = `[${index}].${name}`;
 
         if (this.validate(index, name, value)) {
 
-            const newEditedData = [ ...this.state.editedData ];
-            _.set(newEditedData, fieldPath, value);
+            const originalData = this.state.editedData;
+            const editedData = [ ...this.state.editedData ];
+            _.set(editedData, fieldPath, value);
 
-            // Note: This could be bad for performance if the change of the entire `editedData` set is causing redraws.
+            // note: This could be bad for performance if the change of the entire `editedData` set is causing redraws.
             await this.setStateAsync({
-                editedData: newEditedData,
+                editedData: editedData,
             });
 
             await this.clearValidationError(index, name);
+
+            await this.changed(editedData[index], originalData[index]);
 
             // await this.props.autoSave
             //     ? this.submit(null, index)
@@ -233,12 +235,18 @@ export class Form<
 
             await this.checkForm();
 
-            this.props.onSubmit && this.props.onSubmit(this.getEditedData());
+            const editedData = _.isArray(this.props.data)
+                ? this.state.editedData as unknown as OriginalData
+                : this.state.editedData[0] as OriginalData;
+
+            this.props.onSubmit && this.props.onSubmit(editedData);
         }
         catch (validationErrors) {
 
+            const indexedValidationErrors = this.indexErrors(validationErrors);
+            
             await this.setStateAsync({
-                validationErrors: this.indexErrors(validationErrors),
+                validationErrors: indexedValidationErrors,
             });
 
             this.props.onInvalid && this.props.onInvalid(this.state.validationErrors);
@@ -345,13 +353,10 @@ export class Form<
     //         : this.changed(index);
     // }
 
-    // private async changed(index?: number) {
+    private async changed(editedItem: DataItemType<OriginalData>, originalItem: DataItemType<OriginalData>) {
 
-    //     this.props.onChange && this.props.onChange(_.isNumber(index)
-    //         ? this.state.data[index]
-    //         : this.state.data[0]
-    //     );
-    // }
+        this.props.onChange && this.props.onChange(editedItem, originalItem);
+    }
 
     private async checkForm() {
 
@@ -361,17 +366,10 @@ export class Form<
         }
 
         await this.state.collectionSchema.validate(this.state.editedData, {
-            abortEarly: this.props.autoSave,
+            abortEarly: false,
         });
 
         await this.clearValidationErrors();
-    }
-
-    private getEditedData() {
-
-        return _.isArray(this.props.data)
-            ? this.state.editedData as unknown as OriginalData
-            : this.state.editedData[0] as OriginalData;
     }
 
     private indexErrors(e: Yup.ValidationError) {
@@ -385,7 +383,7 @@ export class Form<
 
                 return nextSet;
             },
-            Form.defaultValidationErrors<OriginalData>()
+            Form.defaultValidationErrors()
         );
     }
 
