@@ -16,7 +16,7 @@ export interface FormContextUtilities<DataItem> {
 
     submit(): Promise<void>;
     add(datum: DataItem): Promise<void>;
-    setFieldValue(index: number, name: keyof DataItem, value: DataItem[typeof name]): Promise<void>;
+    setFieldValue(index: number, name: keyof DataItem, value?: DataItem[typeof name] | undefined): Promise<void>;
 }
 
 export interface FormContext<DataType> {
