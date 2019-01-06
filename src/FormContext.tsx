@@ -41,9 +41,9 @@ export type GetDataType<C> = C extends FormContext<infer T> ? T : never;
 
 export function withForm
 <
-    DataType,
-    WidgetType extends React.ComponentType<UsesFormContext<DataType> & any>,
-    WidgetProps extends GetProps<WidgetType>
+    DataType = any,
+    WidgetType extends React.ComponentType<UsesFormContext<DataType> & any> = React.ComponentType<UsesFormContext<DataType> & any>,
+    WidgetProps extends GetProps<WidgetType> = GetProps<WidgetType>
 >
 (FormComponent: WidgetType)
 : React.ComponentType<Omit<WidgetProps, keyof UsesFormContext<DataType>>> {
