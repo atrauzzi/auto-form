@@ -383,9 +383,7 @@ implements FormContextUtilities<DataItem> {
             .toArray()
             .filter()
             .value()
-            .length === this.props.identityProperties.length
-            ? "true"
-            : "false";
+            .length === this.props.identityProperties.length;
     }
 
     private calculateIdentity(index: number) {
