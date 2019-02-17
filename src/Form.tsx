@@ -292,10 +292,6 @@ implements FormContextUtilities<DataItem> {
 
         await this.setStateAsync({ validationErrors });
 
-        // this.state.validationErrors is empty?
-        console.log(this.state.validationErrors);
-
-        //this.props.onInvalid && this.props.onInvalid(this.state.validationErrors);
         this.props.onInvalid && this.props.onInvalid(validationErrors);
     }
 
