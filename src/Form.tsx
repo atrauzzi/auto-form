@@ -170,9 +170,7 @@ implements FormContextUtilities<DataItem> {
                             validationErrors: this.state.validationErrors,
                         }}
                     >
-                    <AutoWrapper>
                         { children }
-                    </AutoWrapper>
                     </FormProvider>
                 </React.Fragment>
             );
@@ -293,7 +291,7 @@ implements FormContextUtilities<DataItem> {
 
         await this.setStateAsync({ validationErrors });
 
-        this.props.onInvalid && this.props.onInvalid(this.state.validationErrors);
+        this.props.onInvalid && this.props.onInvalid(validationErrors);
     }
 
     private async clearValidationError<DataItem = DataItemType<OriginalData>>(index: number, name: keyof DataItem) {
