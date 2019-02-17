@@ -19,8 +19,7 @@ interface ComponentProps<
     // autoSave?: boolean;
 
     identityProperties?: (keyof DataItem)[];
-    immutable?: boolean;
-    // immutable?: boolean | ((data: DataItem) => boolean);
+    immutable?: boolean | ((data: DataItem) => boolean);
 
     useFormTag?: boolean;
     name?: string;
