@@ -170,9 +170,7 @@ implements FormContextUtilities<DataItem> {
                             validationErrors: this.state.validationErrors,
                         }}
                     >
-                    <AutoWrapper>
                         { children }
-                    </AutoWrapper>
                     </FormProvider>
                 </React.Fragment>
             );
