@@ -285,19 +285,17 @@ implements FormContextUtilities<DataItem> {
 
     private async setValidationError<DataItem = DataItemType<OriginalData>>(index: number, name: keyof DataItem, error: ValidationErrors<OriginalData>) {
 
-        console.log("error::: ", index, name, error);
-
         const fieldPath = `${index}.${name}`;
-
-        console.log("error::: ", fieldPath, index, name, error);
 
         const validationErrors = _.clone(this.state.validationErrors);
         _.set(validationErrors, fieldPath, error);
 
-        console.log("set Validation Errors", validationErrors);
-
         await this.setStateAsync({ validationErrors });
 
+        // this.state.validationErrors is empty?
+        console.log(this.state.validationErrors);
+
+        //this.props.onInvalid && this.props.onInvalid(this.state.validationErrors);
         this.props.onInvalid && this.props.onInvalid(validationErrors);
     }
 
