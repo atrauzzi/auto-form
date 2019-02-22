@@ -286,7 +286,6 @@ implements FormContextUtilities<DataItem> {
         const fieldPath = `${index}.${name}`;
 
         const validationErrors = _.clone(this.state.validationErrors);
-
         _.set(validationErrors, fieldPath, error);
 
         await this.setStateAsync({ validationErrors });
