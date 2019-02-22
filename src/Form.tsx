@@ -7,7 +7,7 @@ import { DataOrSetType, DataItemType, DataSetType } from "./DataType";
 import { AutoWrapper } from "auto-wrapper";
 
 
-interface ComponentProps<
+export interface ComponentProps<
     OriginalData,
     DataItem = DataItemType<OriginalData>
 > {
@@ -69,7 +69,6 @@ implements FormContextUtilities<DataItem> {
             !state 
             || (props.data !== state.sourceData)
         ) {
-
             return {
                 collectionSchema: Form.castSchema(props.schema),
                 sourceData: props.data,
